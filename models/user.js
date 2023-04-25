@@ -4,6 +4,7 @@ const Joi = require("joi");
 const { hadleMongooseError } = require("../helpers");
 
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const subscriptionList = ["starter", "pro", "business"];
 
 const userSchema = new Schema(
   {
@@ -23,14 +24,18 @@ const userSchema = new Schema(
       required: [true, "Password is required"],
     },
 
-    // subscription: {
-    //   type: String,
-    //   enum: ["starter", "pro", "business"],
-    //   default: "starter",
-    // },
+    subscription: {
+      type: String,
+      enum: subscriptionList,
+      default: "starter",
+    },
     token: {
       type: String,
       default: null,
+    },
+    avatarURL: {
+      type: String,
+      required: true,
     },
   },
   { versionKey: false, timestamps: true }
@@ -49,6 +54,7 @@ const registerSchema = Joi.object({
     "string.empty": `"email" cannot be empty`,
   }),
   password: Joi.string().min(6).required(),
+  subscription: Joi.string(),
 });
 
 const loginSchema = Joi.object({
@@ -59,7 +65,13 @@ const loginSchema = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
-const schemas = { registerSchema, loginSchema };
+const updateSubscriptionSchema = Joi.object({
+  subscription: Joi.string().required().messages({
+    "any.required": `"subscription status" is required`,
+  }),
+});
+
+const schemas = { registerSchema, loginSchema, updateSubscriptionSchema };
 
 const User = model("user", userSchema);
 
